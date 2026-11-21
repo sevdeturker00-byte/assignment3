@@ -29,12 +29,13 @@ function AddForm({ dispatch }: { dispatch: Dispatch<Action> }) {
 type FilterBarProps = {
   activeFilter: Filter
   counts: Record<Filter, number>
+  canUndo: boolean
   dispatch: Dispatch<Action>
 }
 
-function FilterBar({ activeFilter, counts, dispatch }: FilterBarProps) {
+function FilterBar({ activeFilter, counts, canUndo, dispatch }: FilterBarProps) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12, alignItems: 'center' }}>
       {FILTERS.map((filter) => {
         const isActive = filter === activeFilter
         return (
@@ -58,19 +59,33 @@ function FilterBar({ activeFilter, counts, dispatch }: FilterBarProps) {
         )
       })}
 
-      <button
-        type="button"
-        onClick={() => dispatch({ type: 'clearDone' })}
-        disabled={counts.done === 0}
-        style={{
-          marginLeft: 'auto',
-          padding: '6px 10px',
-          borderRadius: 6,
-          cursor: counts.done === 0 ? 'not-allowed' : 'pointer',
-        }}
-      >
-        Clear done
-      </button>
+      <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'undo' })}
+          disabled={!canUndo}
+          style={{
+            padding: '6px 10px',
+            borderRadius: 6,
+            cursor: !canUndo ? 'not-allowed' : 'pointer',
+          }}
+        >
+          Undo
+        </button>
+
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'clearDone' })}
+          disabled={counts.done === 0}
+          style={{
+            padding: '6px 10px',
+            borderRadius: 6,
+            cursor: counts.done === 0 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          Clear done
+        </button>
+      </div>
     </div>
   )
 }
@@ -104,7 +119,12 @@ export default function App() {
     <main style={{ maxWidth: 640, margin: '24px auto', fontFamily: 'system-ui, sans-serif', padding: '0 16px' }}>
       <h1>Task Manager</h1>
       <AddForm dispatch={dispatch} />
-      <FilterBar activeFilter={state.filter} counts={counts} dispatch={dispatch} />
+      <FilterBar
+        activeFilter={state.filter}
+        counts={counts}
+        canUndo={state.past.length > 0}
+        dispatch={dispatch}
+      />
       <TaskList tasks={visibleTasks} dispatch={dispatch} />
     </main>
   )
